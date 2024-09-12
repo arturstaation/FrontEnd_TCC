@@ -134,3 +134,50 @@ h1 {
     z-index: 2;
     color: white;
 }
+
+#resultados p {
+    font-size: 1.2em;
+    color: #666;
+    text-align: center;
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Container das notificações */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+/* Estilo geral para cada notificação */
+.notification {
+    background-color: #f44336;
+    color: white;
+    padding: 16px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Estilo da notificação de sucesso */
+.notification.success {
+    background-color: #4CAF50;
+}
+
+/* Estilo da notificação de erro */
+.notification.error {
+    background-color: #f44336;
+}

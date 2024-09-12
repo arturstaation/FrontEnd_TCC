@@ -1,18 +1,21 @@
 document.getElementById('buscar_submit').addEventListener('click', async () => {
     const input = document.getElementById('input_lugares').value;
     const loadingElement = document.getElementById('loading');
+    const placeh = document.getElementById('sem_resultados');
     loadingElement.classList.remove('hidden');
     if (input) {
         try {
 
             const response = await fetch(`http://127.0.0.1:5000/GetEstabelecimentos/${input}`);
             const data = await response.json();
-            console.log(data);
 
             if (!data.hasError) {
 
                 const resultados = document.getElementById('resultados');
                 resultados.innerHTML = '';
+
+                if(data.establishments.length > 0){
+                    sem_resultados.classList.add('hidden');
 
                 data.establishments.forEach(estabelecimento => {
 
@@ -67,11 +70,11 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                                 link.download = `reviews_${estabelecimento.place_id}.xlsx`;
                                 link.click();
                             } else {
-                                alert('Erro ao carregar avaliações.');
+                                showNotification('Erro ao carregar avaliações.');
                             }
                         } catch (error) {
                             console.error('Erro:', error);
-                            alert('Erro ao realizar a busca.');
+                            showNotification('Erro ao realizar a busca.');
                         } finally {
                             loadingElement.classList.add('hidden');
                         }
@@ -82,15 +85,45 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
 
                     resultados.appendChild(card);
                 });
+            }else{
+                sem_resultados.classList.remove('hidden');
+            }
             } else {
-                alert('Erro ao buscar estabelecimentos.');
+                showNotification('Erro ao buscar estabelecimentos.');
             }
         } catch (error) {
             console.error('Erro:', error);
-            alert('Erro ao realizar a busca.');
+            showNotification('Erro ao realizar a busca.');
         }
     } else {
-        alert('Digite o nome do restaurante.');
+        showNotification('Digite o nome do restaurante.');
     }
     loadingElement.classList.add('hidden');
 });
+
+
+function showNotification(message, type = 'error') {
+    // Cria o elemento da notificação
+    const notification = document.createElement('div');
+    notification.classList.add('notification', type);
+    notification.textContent = message;
+
+    // Adiciona a notificação ao container
+    const container = document.getElementById('notification-container');
+    container.appendChild(notification);
+
+    // Mostra a notificação (adiciona opacidade e animação)
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+    }, 100);
+
+    // Remove a notificação após 5 segundos
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            notification.remove();
+        }, 300); // Tempo da transição para sumir
+    }, 5000); // Tempo que a notificação permanece visível
+}

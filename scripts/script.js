@@ -1,6 +1,7 @@
 document.getElementById('buscar_submit').addEventListener('click', async () => {
     const input = document.getElementById('input_lugares').value;
-
+    const loadingElement = document.getElementById('loading');
+    loadingElement.classList.remove('hidden');
     if (input) {
         try {
 
@@ -40,6 +41,8 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                     btnAvaliacoes.textContent = 'Ver Avaliações';
                     btnAvaliacoes.addEventListener('click', async () => {
                         try {
+                            loadingElement.classList.remove('hidden');
+
                             const reviewsResponse = await fetch(`http://127.0.0.1:5000/GetReviewsExcel/${estabelecimento.place_id}`);
                             const reviewsData = await reviewsResponse.json();
 
@@ -69,6 +72,8 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                         } catch (error) {
                             console.error('Erro:', error);
                             alert('Erro ao realizar a busca.');
+                        } finally {
+                            loadingElement.classList.add('hidden');
                         }
                     });
 
@@ -87,4 +92,5 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
     } else {
         alert('Digite o nome do restaurante.');
     }
+    loadingElement.classList.add('hidden');
 });

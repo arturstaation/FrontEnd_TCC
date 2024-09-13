@@ -14,80 +14,86 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                 const resultados = document.getElementById('resultados');
                 resultados.innerHTML = '';
 
-                if(data.establishments.length > 0){
-                    sem_resultados.classList.add('hidden');
+                if (data.establishments.length > 0) {
 
-                data.establishments.forEach(estabelecimento => {
+                    if (!placeh.classList.contains('hidden'))
+                        placeh.classList.add('hidden');
 
-                    const card = document.createElement('div');
-                    card.classList.add('card');
+                    data.establishments.forEach(estabelecimento => {
 
-                    const titulo = document.createElement('h2');
-                    titulo.textContent = estabelecimento.name;
-                    card.appendChild(titulo);
+                        const card = document.createElement('div');
+                        card.classList.add('card');
 
-                    const subtitulo = document.createElement('p');
-                    subtitulo.textContent = estabelecimento.formatted_address;
-                    card.appendChild(subtitulo);
+                        const titulo = document.createElement('h2');
+                        titulo.textContent = estabelecimento.name;
+                        card.appendChild(titulo);
 
-                    const numAvaliacoes = document.createElement('p');
-                    numAvaliacoes.textContent = `Número de Avaliações: ${estabelecimento.reviews}`;
-                    card.appendChild(numAvaliacoes);
+                        const subtitulo = document.createElement('p');
+                        subtitulo.textContent = estabelecimento.formatted_address;
+                        card.appendChild(subtitulo);
 
-                    const avaliacao = document.createElement('span');
-                    avaliacao.textContent = `Avaliação: ${estabelecimento.rating}`;
-                    avaliacao.style.float = 'right';
-                    card.appendChild(avaliacao);
+                        const numAvaliacoes = document.createElement('p');
+                        numAvaliacoes.textContent = `Número de Avaliações: ${estabelecimento.reviews}`;
+                        card.appendChild(numAvaliacoes);
+
+                        const avaliacao = document.createElement('span');
+                        avaliacao.textContent = `Avaliação: ${estabelecimento.rating}`;
+                        avaliacao.style.float = 'right';
+                        card.appendChild(avaliacao);
 
 
-                    const btnAvaliacoes = document.createElement('btn');
-                    btnAvaliacoes.textContent = 'Ver Avaliações';
-                    btnAvaliacoes.addEventListener('click', async () => {
-                        try {
-                            loadingElement.classList.remove('hidden');
+                        const btnAvaliacoes = document.createElement('btn');
+                        btnAvaliacoes.textContent = 'Ver Avaliações';
+                        btnAvaliacoes.addEventListener('click', async () => {
+                            try {
+                                loadingElement.classList.remove('hidden');
 
-                            const reviewsResponse = await fetch(`http://127.0.0.1:5000/GetReviewsExcel/${estabelecimento.place_id}`);
-                            const reviewsData = await reviewsResponse.json();
+                                const reviewsResponse = await fetch(`http://127.0.0.1:5000/GetReviewsExcel/${estabelecimento.place_id}`);
+                                const reviewsData = await reviewsResponse.json();
 
-                            if (!reviewsData.hasError) {
-                                const base64Data = reviewsData.arquivo;
-                                const byteCharacters = atob(base64Data);
-                                const byteArrays = [];
+                                if (!reviewsData.hasError) {
+                                    const base64Data = reviewsData.arquivo;
+                                    const byteCharacters = atob(base64Data);
+                                    const byteArrays = [];
 
-                                for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-                                    const slice = byteCharacters.slice(offset, offset + 512);
-                                    const byteNumbers = new Array(slice.length);
-                                    for (let i = 0; i < slice.length; i++) {
-                                        byteNumbers[i] = slice.charCodeAt(i);
+                                    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                                        const slice = byteCharacters.slice(offset, offset + 512);
+                                        const byteNumbers = new Array(slice.length);
+                                        for (let i = 0; i < slice.length; i++) {
+                                            byteNumbers[i] = slice.charCodeAt(i);
+                                        }
+                                        const byteArray = new Uint8Array(byteNumbers);
+                                        byteArrays.push(byteArray);
                                     }
-                                    const byteArray = new Uint8Array(byteNumbers);
-                                    byteArrays.push(byteArray);
-                                }
 
-                                const blob = new Blob(byteArrays, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                                const link = document.createElement('a');
-                                link.href = URL.createObjectURL(blob);
-                                link.download = `reviews_${estabelecimento.place_id}.xlsx`;
-                                link.click();
-                            } else {
-                                showNotification('Erro ao carregar avaliações.');
+                                    const blob = new Blob(byteArrays, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                                    const link = document.createElement('a');
+                                    link.href = URL.createObjectURL(blob);
+                                    link.download = `reviews_${estabelecimento.place_id}.xlsx`;
+                                    link.click();
+                                    showNotification('Avaliações obtidas com sucesso!', 'success')
+                                } else {
+                                    showNotification('Erro ao carregar avaliações.');
+                                }
+                            } catch (error) {
+                                console.error('Erro:', error);
+                                showNotification('Erro ao realizar a busca.');
+                            } finally {
+                                loadingElement.classList.add('hidden');
                             }
-                        } catch (error) {
-                            console.error('Erro:', error);
-                            showNotification('Erro ao realizar a busca.');
-                        } finally {
-                            loadingElement.classList.add('hidden');
-                        }
+                        });
+
+                        card.appendChild(btnAvaliacoes);
+
+
+                        resultados.appendChild(card);
                     });
 
-                    card.appendChild(btnAvaliacoes);
-
-
-                    resultados.appendChild(card);
-                });
-            }else{
-                sem_resultados.classList.remove('hidden');
-            }
+                    showNotification('Estabelecimentos obtidos com sucesso!', 'success')
+                } else {
+                    if (placeh.classList.contains('hidden'))
+                        placeh.classList.remove('hidden');
+                }
             } else {
                 showNotification('Erro ao buscar estabelecimentos.');
             }

@@ -135,7 +135,7 @@ h1 {
     color: white;
 }
 
-#resultados p {
+#sem_resultados{
     font-size: 1.2em;
     color: #666;
     text-align: center;

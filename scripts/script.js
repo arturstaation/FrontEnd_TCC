@@ -109,27 +109,36 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
 
 
 function showNotification(message, type = 'error') {
-    // Cria o elemento da notificação
     const notification = document.createElement('div');
     notification.classList.add('notification', type);
     notification.textContent = message;
 
-    // Adiciona a notificação ao container
     const container = document.getElementById('notification-container');
     container.appendChild(notification);
 
-    // Mostra a notificação (adiciona opacidade e animação)
     setTimeout(() => {
         notification.style.opacity = '1';
         notification.style.transform = 'translateY(0)';
     }, 100);
 
-    // Remove a notificação após 5 segundos
     setTimeout(() => {
         notification.style.opacity = '0';
         notification.style.transform = 'translateY(-20px)';
         setTimeout(() => {
             notification.remove();
-        }, 300); // Tempo da transição para sumir
-    }, 5000); // Tempo que a notificação permanece visível
+        }, 300);
+    }, 5000);
 }
+
+const darkModeToggle = document.getElementById('darkModeToggle');
+const body = document.body;
+
+darkModeToggle.addEventListener('click', function () {
+    body.classList.toggle('dark-mode');
+
+    if (body.classList.contains('dark-mode')) {
+        darkModeToggle.textContent = '☀️ Modo Claro';
+    } else {
+        darkModeToggle.textContent = '🌙 Modo Escuro';
+    }
+});

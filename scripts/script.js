@@ -66,13 +66,16 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                                         byteArrays.push(byteArray);
                                     }
 
-                                    const blob = new Blob(byteArrays, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                                    const blob = new Blob(byteArrays, { type: 'text/csv' });
                                     const link = document.createElement('a');
                                     link.href = URL.createObjectURL(blob);
-                                    link.download = `reviews_${estabelecimento.place_id}.xlsx`;
+
+                                    link.download = `reviews_${estabelecimento.place_id}.csv`;
                                     link.click();
-                                    showNotification('Avaliações obtidas com sucesso!', 'success')
-                                } else {
+
+                                    showNotification('Avaliações obtidas com sucesso!', 'success');
+                                }
+                                else {
                                     showNotification('Erro ao carregar avaliações.');
                                 }
                             } catch (error) {

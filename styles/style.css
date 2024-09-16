@@ -32,17 +32,6 @@
     --dark-mode-toggle-hover-text-color: #e0e0e0;
 }
 
-body,
-h1,
-#input_lugares,
-#buscar_submit,
-.card,
-#sem_resultados,
-#darkModeToggle {
-    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
-}
-
-
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -53,6 +42,12 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.4s ease, color 0.4s ease;
+    /* Adicione transição aqui */
+}
+
+.no-transition {
+    transition: none !important;
 }
 
 h1 {

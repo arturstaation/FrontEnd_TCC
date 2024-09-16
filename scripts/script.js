@@ -130,15 +130,41 @@ function showNotification(message, type = 'error') {
     }, 5000);
 }
 
-const darkModeToggle = document.getElementById('darkModeToggle');
-const body = document.body;
+document.addEventListener('DOMContentLoaded', () => {
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
 
-darkModeToggle.addEventListener('click', function () {
-    body.classList.toggle('dark-mode');
-
-    if (body.classList.contains('dark-mode')) {
+    function enableDarkMode() {
+        body.classList.add('dark-mode');
         darkModeToggle.textContent = '☀️ Modo Claro';
-    } else {
-        darkModeToggle.textContent = '🌙 Modo Escuro';
+        localStorage.setItem('theme', 'dark');
     }
+
+    function disableDarkMode() {
+        body.classList.remove('dark-mode');
+        darkModeToggle.textContent = '🌙 Modo Escuro';
+        localStorage.setItem('theme', 'light');
+    }
+
+    const savedTheme = localStorage.getItem('theme');
+
+    body.classList.add('no-transition');
+
+    if (savedTheme === 'dark') {
+        enableDarkMode();
+    } else {
+        disableDarkMode();
+    }
+
+    setTimeout(() => {
+        body.classList.remove('no-transition');
+    }, 10);
+
+    darkModeToggle.addEventListener('click', () => {
+        if (body.classList.contains('dark-mode')) {
+            disableDarkMode();
+        } else {
+            enableDarkMode();
+        }
+    });
 });

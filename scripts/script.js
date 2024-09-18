@@ -45,44 +45,48 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                         const btnAvaliacoes = document.createElement('btn');
                         btnAvaliacoes.textContent = 'Ver Avaliações';
                         btnAvaliacoes.addEventListener('click', async () => {
-                            try {
-                                loadingElement.classList.remove('hidden');
+                            if (estabelecimento.reviews == 0) {
+                                showNotification('O estabelecimento não possui reviews.');
+                            } else {
+                                try {
+                                    loadingElement.classList.remove('hidden');
 
-                                const reviewsResponse = await fetch(`http://127.0.0.1:5000/GetReviewsExcel/${estabelecimento.place_id}`);
-                                const reviewsData = await reviewsResponse.json();
+                                    const reviewsResponse = await fetch(`http://127.0.0.1:5000/GetReviewsExcel/${estabelecimento.place_id}`);
+                                    const reviewsData = await reviewsResponse.json();
 
-                                if (!reviewsData.hasError) {
-                                    const base64Data = reviewsData.arquivo;
-                                    const byteCharacters = atob(base64Data);
-                                    const byteArrays = [];
+                                    if (!reviewsData.hasError) {
+                                        const base64Data = reviewsData.arquivo;
+                                        const byteCharacters = atob(base64Data);
+                                        const byteArrays = [];
 
-                                    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-                                        const slice = byteCharacters.slice(offset, offset + 512);
-                                        const byteNumbers = new Array(slice.length);
-                                        for (let i = 0; i < slice.length; i++) {
-                                            byteNumbers[i] = slice.charCodeAt(i);
+                                        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                                            const slice = byteCharacters.slice(offset, offset + 512);
+                                            const byteNumbers = new Array(slice.length);
+                                            for (let i = 0; i < slice.length; i++) {
+                                                byteNumbers[i] = slice.charCodeAt(i);
+                                            }
+                                            const byteArray = new Uint8Array(byteNumbers);
+                                            byteArrays.push(byteArray);
                                         }
-                                        const byteArray = new Uint8Array(byteNumbers);
-                                        byteArrays.push(byteArray);
+
+                                        const blob = new Blob(byteArrays, { type: 'text/csv' });
+                                        const link = document.createElement('a');
+                                        link.href = URL.createObjectURL(blob);
+
+                                        link.download = `reviews_${estabelecimento.place_id}.csv`;
+                                        link.click();
+
+                                        showNotification('Avaliações obtidas com sucesso!', 'success');
                                     }
-
-                                    const blob = new Blob(byteArrays, { type: 'text/csv' });
-                                    const link = document.createElement('a');
-                                    link.href = URL.createObjectURL(blob);
-
-                                    link.download = `reviews_${estabelecimento.place_id}.csv`;
-                                    link.click();
-
-                                    showNotification('Avaliações obtidas com sucesso!', 'success');
+                                    else {
+                                        showNotification('Erro ao carregar avaliações.');
+                                    }
+                                } catch (error) {
+                                    console.error('Erro:', error);
+                                    showNotification('Erro ao realizar a busca.');
+                                } finally {
+                                    loadingElement.classList.add('hidden');
                                 }
-                                else {
-                                    showNotification('Erro ao carregar avaliações.');
-                                }
-                            } catch (error) {
-                                console.error('Erro:', error);
-                                showNotification('Erro ao realizar a busca.');
-                            } finally {
-                                loadingElement.classList.add('hidden');
                             }
                         });
 

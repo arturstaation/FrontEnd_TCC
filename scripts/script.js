@@ -277,47 +277,63 @@ function processCSV(parsedData) {
     const rows = parsedData;
     const table = document.getElementById('csvTable');
     table.innerHTML = '';
-
+    var indice = 0;
 
     const headerRow = Object.keys(rows[0]);
-    const header = document.createElement('tr');
-    headerRow.forEach(headerText => {
-        const th = document.createElement('th');
-        th.textContent = headerText;
-        header.appendChild(th);
-    });
+    const expected_fields = ['tempo', 'estrelas', 'avaliacao', 'Local Guide', 'Avaliacoes', 'Classificacoes', 'Fotos', 'Videos', 'Legendas', 'Respostas', 'Edicoes', 'Informadas como Incorretas', 'Lugares Adicionadas', 'Estradas Adicionadas', 'Informacoes Verificadas', 'P/R'];
+    var same_template = true;
+    for (let i = 0; i < headerRow.length; i++) {
+        if (headerRow[i] != expected_fields[i])
+            same_template = false;
+    }
 
+    if (same_template) {
 
-    const thSelecionado = document.createElement('th');
-    thSelecionado.textContent = 'Fraude';
-    header.appendChild(thSelecionado);
-    table.appendChild(header);
+        const header = document.createElement('tr');
 
-
-    rows.forEach(row => {
-        const tr = document.createElement('tr');
         headerRow.forEach(headerText => {
-            const td = document.createElement('td');
-            td.textContent = row[headerText];
-            tr.appendChild(td);
+            const th = document.createElement('th');
+            th.textContent = headerText;
+            header.appendChild(th);
         });
 
 
-        const tdSelecionado = document.createElement('td');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        tdSelecionado.appendChild(checkbox);
-        tr.appendChild(tdSelecionado);
+        const thSelecionado = document.createElement('th');
+        thSelecionado.textContent = 'Fraude';
+        header.appendChild(thSelecionado);
+        table.appendChild(header);
 
-        table.appendChild(tr);
-    });
 
-    document.getElementById('manualReviewSection').classList.remove('hidden');
-    document.getElementById('saveCsv').classList.remove('hidden');
 
-    document.getElementById('saveCsv').addEventListener('click', () => {
-        saveCSV(rows);
-    });
+
+
+        rows.forEach(row => {
+            const tr = document.createElement('tr');
+            headerRow.forEach(headerText => {
+                const td = document.createElement('td');
+                td.textContent = row[headerText];
+                tr.appendChild(td);
+            });
+
+
+            const tdSelecionado = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            tdSelecionado.appendChild(checkbox);
+            tr.appendChild(tdSelecionado);
+
+            table.appendChild(tr);
+        });
+
+        document.getElementById('manualReviewSection').classList.remove('hidden');
+        document.getElementById('saveCsv').classList.remove('hidden');
+
+        document.getElementById('saveCsv').addEventListener('click', () => {
+            saveCSV(rows);
+        });
+    } else {
+        showNotification("CSV com formato errado");
+    }
 }
 
 

@@ -229,6 +229,7 @@ function removeFile() {
     const removeBtn = document.getElementById('removeFile');
     const automaticReviewBtn = document.getElementById('automaticReview');
     const manualReviewBtn = document.getElementById('manualReview');
+    const table = document.getElementById('csvTable');
 
     input.value = "";
     label.innerHTML = "Escolher arquivo .csv";
@@ -277,7 +278,7 @@ function processCSV(parsedData) {
     const rows = parsedData;
     const table = document.getElementById('csvTable');
     table.innerHTML = '';
-    var indice = 0;
+    var indice = 1;
 
     const headerRow = Object.keys(rows[0]);
     const expected_fields = ['tempo', 'estrelas', 'avaliacao', 'Local Guide', 'Avaliacoes', 'Classificacoes', 'Fotos', 'Videos', 'Legendas', 'Respostas', 'Edicoes', 'Informadas como Incorretas', 'Lugares Adicionadas', 'Estradas Adicionadas', 'Informacoes Verificadas', 'P/R'];
@@ -290,7 +291,9 @@ function processCSV(parsedData) {
     if (same_template) {
 
         const header = document.createElement('tr');
-
+        const thIndice = document.createElement('th');
+        thIndice.textContent = 'Índice';
+        header.appendChild(thIndice);
         headerRow.forEach(headerText => {
             const th = document.createElement('th');
             th.textContent = headerText;
@@ -301,6 +304,8 @@ function processCSV(parsedData) {
         const thSelecionado = document.createElement('th');
         thSelecionado.textContent = 'Fraude';
         header.appendChild(thSelecionado);
+
+
         table.appendChild(header);
 
 
@@ -309,11 +314,15 @@ function processCSV(parsedData) {
 
         rows.forEach(row => {
             const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.textContent = indice;
+            tr.appendChild(td);
             headerRow.forEach(headerText => {
                 const td = document.createElement('td');
                 td.textContent = row[headerText];
                 tr.appendChild(td);
             });
+            indice++;
 
 
             const tdSelecionado = document.createElement('td');

@@ -179,24 +179,20 @@ document.addEventListener('DOMContentLoaded', () => {
 function openTab(evt, tabName) {
     var i, tabcontent, tablinks;
 
-    // Esconde todos os elementos com a classe "tabcontent"
     tabcontent = document.getElementsByClassName("tabcontent");
     for (i = 0; i < tabcontent.length; i++) {
         tabcontent[i].style.display = "none";
     }
 
-    // Remove a classe "active" de todos os botões
     tablinks = document.getElementsByClassName("tablinks");
     for (i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
 
-    // Exibe o conteúdo da aba atual e adiciona a classe "active" ao botão clicado
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
 }
 
-// Mostra a aba "Buscar" por padrão ao carregar a página
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelector(".tablinks").click();
 });
@@ -205,41 +201,52 @@ function updateFileName() {
     const input = document.getElementById('csvFileInput');
     const label = document.getElementById('csvLabel');
     const removeBtn = document.getElementById('removeFile');
+    const automaticReviewBtn = document.getElementById('automaticReview');
+    const manualReviewBtn = document.getElementById('manualReview');
 
-    if (input.files.length > 0) {
-        label.innerHTML = input.files[0].name; // Mostra o nome do arquivo
-        removeBtn.classList.remove('hidden');  // Mostra o botão "Remover"
+    if (input.files.length == 1) {
+        const nome_arquivo = input.files[0].name.split('.');
+        if (nome_arquivo[nome_arquivo.length - 1].toLowerCase() == 'csv') {
+            label.innerHTML = input.files[0].name;
+            removeBtn.classList.remove('hidden');
+            automaticReviewBtn.classList.remove('hidden');
+            manualReviewBtn.classList.remove('hidden');
+        } else {
+            showNotification("O Arquivo deve ser do formato .csv");
+        }
     } else {
-        label.innerHTML = "Escolher arquivo .csv"; // Texto padrão quando não há arquivo
-        removeBtn.classList.add('hidden');        // Esconde o botão "Remover"
+        showNotification("Escolha 1 arquivo .csv");
+        label.innerHTML = "Escolher arquivo .csv";
+        removeBtn.classList.add('hidden');
+        automaticReviewBtn.classList.add('hidden');
+        manualReviewBtn.classList.add('hidden');
     }
 }
 
-// Função para remover o arquivo do input
 function removeFile() {
     const input = document.getElementById('csvFileInput');
     const label = document.getElementById('csvLabel');
     const removeBtn = document.getElementById('removeFile');
+    const automaticReviewBtn = document.getElementById('automaticReview');
+    const manualReviewBtn = document.getElementById('manualReview');
 
-    input.value = ""; // Limpa o valor do input de arquivo
-    label.innerHTML = "Escolher arquivo .csv"; // Retorna o texto original
-    removeBtn.classList.add('hidden'); // Esconde o botão "Remover"
+    input.value = "";
+    label.innerHTML = "Escolher arquivo .csv";
+    removeBtn.classList.add('hidden');
+    automaticReviewBtn.classList.add('hidden');
+    manualReviewBtn.classList.add('hidden');
     document.getElementById('manualReviewSection').classList.add('hidden');
     table.classList.add('hidden');
     table.innerHTML = '';
-
 }
-
 
 document.getElementById('automaticReview').addEventListener('click', () => {
     const fileInput = document.getElementById('csvFileInput');
     if (fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        // Simula a chamada do endpoint de avaliação automática
-        alert(`Avaliação automática realizada com sucesso para o arquivo: ${file.name}`);
-        // Aqui você pode fazer um request para um endpoint de backend, se necessário
+        showNotification(`Avaliação automática realizada com sucesso para o arquivo: ${file.name}`, "success");
     } else {
-        alert('Por favor, faça o upload de um arquivo CSV primeiro.');
+        showNotification('Por favor, faça o upload de um arquivo CSV primeiro.');
     }
 });
 
@@ -252,28 +259,27 @@ document.getElementById('manualReview').addEventListener('click', () => {
         reader.onload = function (e) {
             const csvContent = e.target.result;
             const parsedData = Papa.parse(csvContent, {
-                header: true, // Se o CSV tiver cabeçalhos de coluna
-                dynamicTyping: true, // Converte automaticamente valores numéricos e booleanos
+                header: true,
+                dynamicTyping: true,
                 skipEmptyLines: true
             });
 
-            // Chama a função para processar o CSV e aplicar a lógica da coluna 3 e 4
             processCSV(parsedData.data);
         };
 
         reader.readAsText(file);
     } else {
-        alert('Por favor, faça o upload de um arquivo CSV primeiro.');
+        showNotification('Por favor, faça o upload de um arquivo CSV primeiro.');
     }
 });
 function processCSV(parsedData) {
-    // parsedData é o array de objetos ou arrays retornado pelo PapaParse
-    const rows = parsedData; // Dependendo da configuração do Papa.parse, pode ser um array de arrays ou de objetos
+
+    const rows = parsedData;
     const table = document.getElementById('csvTable');
     table.innerHTML = '';
 
-    // Cria o cabeçalho da tabela
-    const headerRow = Object.keys(rows[0]); // Pegando as chaves do primeiro objeto como cabeçalhos
+
+    const headerRow = Object.keys(rows[0]);
     const header = document.createElement('tr');
     headerRow.forEach(headerText => {
         const th = document.createElement('th');
@@ -281,22 +287,22 @@ function processCSV(parsedData) {
         header.appendChild(th);
     });
 
-    // Adiciona a coluna "Selecionado"
+
     const thSelecionado = document.createElement('th');
     thSelecionado.textContent = 'Fraude';
     header.appendChild(thSelecionado);
     table.appendChild(header);
 
-    // Cria as linhas da tabela
+
     rows.forEach(row => {
         const tr = document.createElement('tr');
         headerRow.forEach(headerText => {
             const td = document.createElement('td');
-            td.textContent = row[headerText]; // Acessa a célula pelo nome da coluna
+            td.textContent = row[headerText];
             tr.appendChild(td);
         });
 
-        // Adiciona checkbox para seleção
+
         const tdSelecionado = document.createElement('td');
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -306,11 +312,9 @@ function processCSV(parsedData) {
         table.appendChild(tr);
     });
 
-    // Mostra o botão para salvar o CSV
     document.getElementById('manualReviewSection').classList.remove('hidden');
     document.getElementById('saveCsv').classList.remove('hidden');
 
-    // Adiciona funcionalidade ao botão de salvar
     document.getElementById('saveCsv').addEventListener('click', () => {
         saveCSV(rows);
     });
@@ -318,24 +322,25 @@ function processCSV(parsedData) {
 
 
 function saveCSV(rows) {
-    // Atualiza a última coluna com base nos checkboxes
     const updatedRows = Array.from(document.querySelectorAll('#csvTable tr')).map((tr, index) => {
-        const cells = Array.from(tr.children).map(td => td.textContent.trim()); // Remover espaços em branco
+        const cells = Array.from(tr.children).map(td => td.textContent.trim());
         if (index > 0) {
             const checkbox = tr.querySelector('input[type="checkbox"]');
             cells.push(checkbox.checked ? 'true' : 'false');
         }
-        // Filtrar valores vazios antes de retornar
+
         return cells.filter(cell => cell !== '');
     });
 
-    // Converte o conteúdo atualizado para CSV
+
     const csvContent = updatedRows.map(row => row.join(',')).join('\n');
 
-    // Baixa o arquivo CSV
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'avaliacao_resultado.csv';
     link.click();
+
+    showNotification('Avaliações manipuladas com sucesso!', 'success');
 }

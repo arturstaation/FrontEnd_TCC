@@ -1,3 +1,24 @@
+function construirTabela(headerRow, fraude = true) {
+    const header = document.createElement('tr');
+    const thIndice = document.createElement('th');
+    const table = document.getElementById('csvTable');
+    thIndice.textContent = 'Índice';
+    header.appendChild(thIndice);
+    headerRow.forEach(headerText => {
+        const th = document.createElement('th');
+        th.textContent = headerText;
+        header.appendChild(th);
+    });
+
+    if (fraude) {
+        const thSelecionado = document.createElement('th');
+        thSelecionado.textContent = 'Fraude';
+        header.appendChild(thSelecionado);
+    }
+
+
+    table.appendChild(header);
+}
 document.getElementById('buscar_submit').addEventListener('click', async () => {
     const input = document.getElementById('input_lugares').value;
     const loadingElement = document.getElementById('loading');
@@ -277,36 +298,16 @@ function processCSV(parsedData) {
 
     const rows = parsedData;
     const table = document.getElementById('csvTable');
+    table.classList.remove('hidden');
     table.innerHTML = '';
     var indice = 1;
 
     const headerRow = Object.keys(rows[0]);
     const expected_fields = ['tempo', 'estrelas', 'avaliacao', 'Local Guide', 'Avaliacoes', 'Classificacoes', 'Fotos', 'Videos', 'Legendas', 'Respostas', 'Edicoes', 'Informadas como Incorretas', 'Lugares Adicionadas', 'Estradas Adicionadas', 'Informacoes Verificadas', 'P/R'];
-    var same_template = true;
-    for (let i = 0; i < headerRow.length; i++) {
-        if (headerRow[i] != expected_fields[i])
-            same_template = false;
-    }
 
-    if (same_template) {
+    if (headerRow.toString() == expected_fields.toString()) {
 
-        const header = document.createElement('tr');
-        const thIndice = document.createElement('th');
-        thIndice.textContent = 'Índice';
-        header.appendChild(thIndice);
-        headerRow.forEach(headerText => {
-            const th = document.createElement('th');
-            th.textContent = headerText;
-            header.appendChild(th);
-        });
-
-
-        const thSelecionado = document.createElement('th');
-        thSelecionado.textContent = 'Fraude';
-        header.appendChild(thSelecionado);
-
-
-        table.appendChild(header);
+        construirTabela(headerRow);
 
 
 
@@ -328,6 +329,7 @@ function processCSV(parsedData) {
             const tdSelecionado = document.createElement('td');
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
+
             tdSelecionado.appendChild(checkbox);
             tr.appendChild(tdSelecionado);
 
@@ -338,29 +340,74 @@ function processCSV(parsedData) {
         document.getElementById('saveCsv').classList.remove('hidden');
 
         document.getElementById('saveCsv').addEventListener('click', () => {
-            saveCSV(rows);
+            saveCSV(rows.splice(1));
         });
     } else {
-        showNotification("CSV com formato errado");
+        expected_fields.push('Fraude');
+        if (headerRow.toString() == expected_fields.toString()) {
+            construirTabela(headerRow, fraude = false);
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.textContent = indice;
+                tr.appendChild(td);
+                headerRow.forEach(headerText => {
+                    const td = document.createElement('td');
+                    if (headerText == 'Fraude') {
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.checked = row[headerText] == 'True' ? true : false;
+                        td.appendChild(checkbox);
+                    }
+                    else
+                        td.textContent = row[headerText];
+                    tr.appendChild(td);
+                });
+                indice++;
+
+
+                table.appendChild(tr);
+            });
+
+            document.getElementById('manualReviewSection').classList.remove('hidden');
+            document.getElementById('saveCsv').classList.remove('hidden');
+
+            document.getElementById('saveCsv').addEventListener('click', () => {
+                saveCSV(rows.splice(1));
+            });
+        } else {
+            showNotification("CSV com formato errado");
+        }
     }
 }
 
 
 function saveCSV(rows) {
     const updatedRows = Array.from(document.querySelectorAll('#csvTable tr')).map((tr, index) => {
-        const cells = Array.from(tr.children).map(td => td.textContent.trim());
+        // Exclui a primeira célula (índice) usando slice(1)
+        let cells = [];
         if (index > 0) {
+            cells = Array.from(tr.children).slice(1, tr.children.length - 1).map((td, index) => {
+                let textContent = td.textContent.trim();
+
+                if (index == 2 && textContent != null) {
+                    return `"${textContent}"`;
+                }
+                return textContent;
+            });
+            // Para as linhas com dados, inclui o valor da checkbox
             const checkbox = tr.querySelector('input[type="checkbox"]');
-            cells.push(checkbox.checked ? 'true' : 'false');
+            cells.push(checkbox.checked ? 'True' : 'False');
+        } else {
+            cells = Array.from(tr.children).slice(1).map(td => td.textContent.trim());
         }
 
-        return cells.filter(cell => cell !== '');
+
+        return cells;
     });
 
 
     const csvContent = updatedRows.map(row => row.join(',')).join('\n');
-
-
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);

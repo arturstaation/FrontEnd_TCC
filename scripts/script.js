@@ -380,7 +380,7 @@ function processCSV(parsedData) {
 
 function saveCSV(rows) {
     const updatedRows = Array.from(document.querySelectorAll('#csvTable tr')).map((tr, index) => {
-        // Exclui a primeira célula (índice) usando slice(1)
+
         let cells = [];
         if (index > 0) {
             cells = Array.from(tr.children).slice(1, tr.children.length - 1).map((td, index) => {
@@ -402,12 +402,16 @@ function saveCSV(rows) {
         return cells;
     });
 
-
+    const input = document.getElementById('csvFileInput');
     const csvContent = updatedRows.map(row => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'avaliacao_resultado.csv';
+    let nome = input.files[0].name.split('.');
+    nome.splice(nome.length - 1, 1, "_avaliado");
+    let nome_final = ""
+    nome.forEach(i => nome_final = `${nome_final}${i}`)
+    link.download = `${nome_final}`;
     link.click();
 
     showNotification('Avaliações manipuladas com sucesso!', 'success');

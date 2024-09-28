@@ -309,10 +309,6 @@ function processCSV(parsedData) {
 
         construirTabela(headerRow);
 
-
-
-
-
         rows.forEach(row => {
             const tr = document.createElement('tr');
             const td = document.createElement('td');

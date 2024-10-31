@@ -62,11 +62,10 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                         avaliacao.style.float = 'right';
                         card.appendChild(avaliacao);
 
-
                         const btnAvaliacoes = document.createElement('btn');
                         btnAvaliacoes.textContent = 'Ver Avaliações';
                         btnAvaliacoes.addEventListener('click', async () => {
-                            if (estabelecimento.reviews == 0) {
+                            if (estabelecimento.reviews === 0) {
                                 showNotification('O estabelecimento não possui reviews.');
                             } else {
                                 try {
@@ -93,13 +92,11 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                                         const blob = new Blob(byteArrays, { type: 'text/csv' });
                                         const link = document.createElement('a');
                                         link.href = URL.createObjectURL(blob);
-
                                         link.download = `reviews_${estabelecimento.place_id}.csv`;
                                         link.click();
 
                                         showNotification('Avaliações obtidas com sucesso!', 'success');
-                                    }
-                                    else {
+                                    } else {
                                         showNotification('Erro ao carregar avaliações.');
                                     }
                                 } catch (error) {
@@ -110,14 +107,36 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                                 }
                             }
                         });
-
                         card.appendChild(btnAvaliacoes);
 
+                        // Botão para obter análise da IA
+                        const btnAnaliseIA = document.createElement('btn');
+                        btnAnaliseIA.textContent = 'Análise de IA';
+                        btnAnaliseIA.addEventListener('click', async () => {
+                            try {
+                                loadingElement.classList.remove('hidden');
+
+                                const analysisResponse = await fetch(`http://127.0.0.1:5000/GetAnalysis/${estabelecimento.place_id}`);
+                                const analysisData = await analysisResponse.json();
+
+                                if (!analysisData.hasError) {
+                                    showNotification(`Análise de IA concluída. Rating sugerido: ${analysisData.rating}`, 'success');
+                                } else {
+                                    showNotification('Erro ao realizar análise de IA.');
+                                }
+                            } catch (error) {
+                                console.error('Erro:', error);
+                                showNotification('Erro ao realizar análise de IA.');
+                            } finally {
+                                loadingElement.classList.add('hidden');
+                            }
+                        });
+                        card.appendChild(btnAnaliseIA);
 
                         resultados.appendChild(card);
                     });
 
-                    showNotification('Estabelecimentos obtidos com sucesso!', 'success')
+                    showNotification('Estabelecimentos obtidos com sucesso!', 'success');
                 } else {
                     if (placeh.classList.contains('hidden'))
                         placeh.classList.remove('hidden');
@@ -134,6 +153,7 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
     }
     loadingElement.classList.add('hidden');
 });
+
 
 
 function showNotification(message, type = 'error') {
@@ -222,16 +242,31 @@ function updateFileName() {
     const input = document.getElementById('csvFileInput');
     const label = document.getElementById('csvLabel');
     const removeBtn = document.getElementById('removeFile');
-    const automaticReviewBtn = document.getElementById('automaticReview');
-    const manualReviewBtn = document.getElementById('manualReview');
 
     if (input.files.length == 1) {
         const nome_arquivo = input.files[0].name.split('.');
         if (nome_arquivo[nome_arquivo.length - 1].toLowerCase() == 'csv') {
             label.innerHTML = input.files[0].name;
             removeBtn.classList.remove('hidden');
-            automaticReviewBtn.classList.remove('hidden');
-            manualReviewBtn.classList.remove('hidden');
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const csvContent = e.target.result;
+                    const parsedData = Papa.parse(csvContent, {
+                        header: true,
+                        dynamicTyping: true,
+                        skipEmptyLines: true
+                    });
+
+                    processCSV(parsedData.data);
+                };
+
+                reader.readAsText(file);
+            } else {
+                showNotification('Por favor, faça o upload de um arquivo CSV primeiro.');
+            }
         } else {
             showNotification("O Arquivo deve ser do formato .csv");
         }
@@ -255,45 +290,11 @@ function removeFile() {
     input.value = "";
     label.innerHTML = "Escolher arquivo .csv";
     removeBtn.classList.add('hidden');
-    automaticReviewBtn.classList.add('hidden');
-    manualReviewBtn.classList.add('hidden');
     document.getElementById('manualReviewSection').classList.add('hidden');
     table.classList.add('hidden');
     table.innerHTML = '';
 }
 
-document.getElementById('automaticReview').addEventListener('click', () => {
-    const fileInput = document.getElementById('csvFileInput');
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        showNotification(`Avaliação automática realizada com sucesso para o arquivo: ${file.name}`, "success");
-    } else {
-        showNotification('Por favor, faça o upload de um arquivo CSV primeiro.');
-    }
-});
-
-document.getElementById('manualReview').addEventListener('click', () => {
-    const fileInput = document.getElementById('csvFileInput');
-    if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function (e) {
-            const csvContent = e.target.result;
-            const parsedData = Papa.parse(csvContent, {
-                header: true,
-                dynamicTyping: true,
-                skipEmptyLines: true
-            });
-
-            processCSV(parsedData.data);
-        };
-
-        reader.readAsText(file);
-    } else {
-        showNotification('Por favor, faça o upload de um arquivo CSV primeiro.');
-    }
-});
 function processCSV(parsedData) {
 
     const rows = parsedData;

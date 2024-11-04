@@ -124,7 +124,7 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                                     btnAnaliseIA.remove();  // Remove o botão do DOM
 
                                     const ratingDisplay = document.createElement('span');
-                                    ratingDisplay.textContent = `Rating sugerido: ${analysisData.rating}`;
+                                    ratingDisplay.textContent = `Avaliação sugerida: ${analysisData.rating}`;
                                     ratingDisplay.classList.add('rating-display'); // Adiciona uma classe para estilização, se desejar
                                     card.appendChild(ratingDisplay); // Altere o local de exibição conforme necessário
 

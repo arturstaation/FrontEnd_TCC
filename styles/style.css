@@ -385,6 +385,11 @@ h1 {
     background-color: #0056b3;
 }
 
+.rating-display {
+    font-weight: bold;
+    color: #007BFF;
+}
+
 
 
 @media (max-width: 1070px) {

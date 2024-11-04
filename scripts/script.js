@@ -116,10 +116,18 @@ document.getElementById('buscar_submit').addEventListener('click', async () => {
                             try {
                                 loadingElement.classList.remove('hidden');
 
-                                const analysisResponse = await fetch(`http://127.0.0.1:5000/GetAnalysis/${estabelecimento.place_id}`);
+                                const analysisResponse = await fetch(`http://127.0.0.1:5000/GetCorrectRating/${estabelecimento.place_id}`);
                                 const analysisData = await analysisResponse.json();
 
                                 if (!analysisData.hasError) {
+                                    // Remove o botão e exibe o rating
+                                    btnAnaliseIA.remove();  // Remove o botão do DOM
+
+                                    const ratingDisplay = document.createElement('span');
+                                    ratingDisplay.textContent = `Rating sugerido: ${analysisData.rating}`;
+                                    ratingDisplay.classList.add('rating-display'); // Adiciona uma classe para estilização, se desejar
+                                    card.appendChild(ratingDisplay); // Altere o local de exibição conforme necessário
+
                                     showNotification(`Análise de IA concluída. Rating sugerido: ${analysisData.rating}`, 'success');
                                 } else {
                                     showNotification('Erro ao realizar análise de IA.');
